@@ -12,18 +12,18 @@ const NUM_OF_DAYS = 7;
 let responseCounter = 0;
 let allFipsPM25 = {};
 
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+  prompt: "\nEnter date (MM-DD-YYYY) or Q to quit: "
+});
+
 
 displayInputPrompt();
 
 
 function displayInputPrompt() {
   console.log("Get county with best air quality for a given date");
-
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-    prompt: "\nEnter date (MM-DD-YYYY) or Q to quit: "
-  });
 
   rl.prompt();
 
@@ -37,7 +37,7 @@ function displayInputPrompt() {
 
     if (moment(input, "MM-DD-YYYY").isValid()) {
       resetGlobalVars();
-      run(input, rl);
+      run(input);
     } else {
       console.log("\nInvalid date! Try again\n");
       rl.prompt();
@@ -51,19 +51,16 @@ function resetGlobalVars() {
   // console.log(responseCounter, allFipsPM25);
 }
 
-function run(inputDateStr, rl) {
+function run(inputDateStr) {
   const inputDate = moment(inputDateStr, "MM-DD-YYYY");
 
-  getAirQualityData(inputDate, rl);
-  getAirQualityData(inputDate.add(1, "d"), rl);
-  getAirQualityData(inputDate.add(1, "d"), rl);
-  getAirQualityData(inputDate.add(1, "d"), rl);
-  getAirQualityData(inputDate.add(1, "d"), rl);
-  getAirQualityData(inputDate.add(1, "d"), rl);
-  getAirQualityData(inputDate.add(1, "d"), rl);
+  for (let i=0; i < 7; i++) {
+    const queryDate = i === 0 ? inputDate : inputDate.add(1, "d");
+    getAirQualityData(queryDate);
+  }
 }
 
-async function getAirQualityData(qryDate, rl) {
+async function getAirQualityData(qryDate) {
   try {
     const filterDate = formatFilterDate(qryDate);
     const response = await axios.get(`${cdcApiEndPoint}?$limit=${NUM_OF_COUNTIES}&date=${filterDate}`);
@@ -73,7 +70,7 @@ async function getAirQualityData(qryDate, rl) {
 
     if (responseCounter === NUM_OF_DAYS) {
       // Responses for all days have been received from the API
-      displayCountyWithBestPM25(rl);
+      displayCountyWithBestPM25();
     }
   } catch(err) {
     console.log(err);
@@ -111,7 +108,7 @@ function formatFipsCode(fipsCode) {
   return fipsCode;
 }
 
-async function displayCountyWithBestPM25(rl) {
+async function displayCountyWithBestPM25() {
   const { minPM25, fipsWithMinPM25 } = getMinPM25WithFips();
 
   try {
