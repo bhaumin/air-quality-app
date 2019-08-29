@@ -54,7 +54,7 @@ function resetGlobalVars() {
 function run(inputDateStr) {
   const inputDate = moment(inputDateStr, "MM-DD-YYYY");
 
-  for (let i=0; i < 7; i++) {
+  for (let i=0; i < NUM_OF_DAYS; i++) {
     const queryDate = i === 0 ? inputDate : inputDate.add(1, "d");
     getAirQualityData(queryDate);
   }
